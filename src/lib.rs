@@ -9,7 +9,7 @@ use std::{
 use prio::{
     codec::Decode,
     field::FieldElementWithInteger,
-    vdaf::prg::{Prg, PrgSha3, Seed, SeedStream},
+    vdaf::xof::{Seed, Xof, XofShake128},
 };
 use rand::{thread_rng, Rng};
 
@@ -48,7 +48,7 @@ where
                 while !done.load(Ordering::Relaxed) {
                     let seed_bytes = rng.gen::<[u8; 16]>();
                     let seed = Seed::get_decoded(&seed_bytes).unwrap();
-                    let mut seed_stream = PrgSha3::seed_stream(&seed, custom, binder);
+                    let mut seed_stream = XofShake128::seed_stream(&seed, custom, binder);
                     for i in 0..config.prg_iterations {
                         seed_stream.fill(&mut buffer[0..F::ENCODED_SIZE]);
                         let candidate = u128::from_le_bytes(buffer);
@@ -70,18 +70,5 @@ where
     }
     for join_handle in join_handles {
         join_handle.join().unwrap();
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use prio::field::Field96;
-
-    use crate::search;
-
-    #[test]
-    fn field96() {
-        // This search should complete quickly.
-        search::<Field96>(crate::Config::new(2, 1000));
     }
 }
