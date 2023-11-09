@@ -9,7 +9,7 @@ use std::{
 use prio::{
     codec::Decode,
     field::FieldElementWithInteger,
-    vdaf::xof::{Seed, Xof, XofShake128},
+    vdaf::xof::{Seed, Xof, XofTurboShake128},
 };
 use rand::{thread_rng, Rng};
 
@@ -48,7 +48,7 @@ where
                 while !done.load(Ordering::Relaxed) {
                     let seed_bytes = rng.gen::<[u8; 16]>();
                     let seed = Seed::get_decoded(&seed_bytes).unwrap();
-                    let mut seed_stream = XofShake128::seed_stream(&seed, custom, binder);
+                    let mut seed_stream = XofTurboShake128::seed_stream(&seed, custom, binder);
                     for i in 0..config.prg_iterations {
                         seed_stream.fill(&mut buffer[0..F::ENCODED_SIZE]);
                         let candidate = u128::from_le_bytes(buffer);
